@@ -1,0 +1,23 @@
+<Solution>
+  <Folder Name="/00_meai/">
+    <Project Path="00_meai/ChatSample.csproj" />
+  </Folder>
+  <Folder Name="/01_agent/">
+    <Project Path="01_agent/BasicAgent.csproj" />
+  </Folder>
+  <Folder Name="/02_mcp/">
+    <Project Path="02_mcp/AgentWithMCPTool.csproj" />
+  </Folder>
+  <Folder Name="/03_websearch/">
+    <Project Path="03_websearch/AgentWithWebSearch.csproj" />
+  </Folder>
+  <Folder Name="/04_rag/">
+    <Project Path="04_rag/AgentRAG.csproj" />
+  </Folder>
+  <Folder Name="/05_memory/">
+    <Project Path="05_memory/AgentMemory.csproj" />
+  </Folder>
+  <Folder Name="/06_skills/">
+    <Project Path="06_skills/AgentSkills.csproj" />
+  </Folder>
+</Solution>
