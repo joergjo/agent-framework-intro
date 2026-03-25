@@ -36,7 +36,6 @@ if (deployment is not { Length: > 0 } ||
     Environment.Exit(1);
 }
 
-// NEW: Define tools for our agent to use
 var context7 = new HostedMcpServerTool(
     serverName: "Context7",
     serverAddress: "https://mcp.context7.com/mcp")

@@ -36,7 +36,6 @@ if (deployment is not { Length: > 0 } ||
     Environment.Exit(1);
 }
 
-// NEW: Define tools for our agent to use
 var context7 = new HostedMcpServerTool(
     serverName: "Context7",
     serverAddress: "https://mcp.context7.com/mcp")
@@ -65,14 +64,10 @@ const string instructions =
 
 var openAIClient = new AzureOpenAIClient(new Uri(endpoint), new DefaultAzureCredential());
 
-// NEW: Create an IEmbeddingGenerator to convert text to embeddings that can be used for retrieval augmented generation (RAG).
 var embeddingGenerator = openAIClient
     .GetEmbeddingClient(embeddingDeployment)
     .AsIEmbeddingGenerator();
 
-// NEW: Create a vector store based on Azure AI Search. By attaching the embedding generator to the vector store, 
-// we can have the agent automatically generate embeddings when working with the vector store, which is super convenient.
-// Note that all vector store implementations still are shipped as Semantic Kernel connectors. 
 var vectorStore = new AzureAISearchVectorStore(
     new SearchIndexClient(
         new Uri(searchEndpoint),
@@ -84,8 +79,6 @@ var vectorStore = new AzureAISearchVectorStore(
 var collection = vectorStore.GetCollection<string, DocumentRecord>(searchIndex);
 var searchAdapter = new SearchAdapter(collection);
 
-// NEW: Create a TextSearchProvider that uses our SearchAdapter to perform retrieval augmented generation (RAG). 
-// A TextSearchProvider is an AIContextProvider for retrieval augmented generation (RAG) use cases. 
 var textSearchProvider = new TextSearchProvider(
     searchAdapter.RunAsync,
     new TextSearchProviderOptions
