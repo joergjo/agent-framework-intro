@@ -33,7 +33,7 @@ var openAIClient = new OpenAIClient(
 var openAIChatClient = openAIClient.GetChatClient(deployment);
 
 // Create the Microsoft.Extensions.AI abstraction IChatClient abstraction from the concrete OpenAI ChatClient. 
-var chatClient = openAIClient.GetChatClient(deployment).AsIChatClient();
+var chatClient = openAIChatClient.AsIChatClient();
 
 // Typically, you rather want to chain these calls for conciseness:
 // var chatClient = new OpenAIClient(

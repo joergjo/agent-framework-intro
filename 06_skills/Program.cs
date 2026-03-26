@@ -130,10 +130,6 @@ const string anotherPrompt =
 
 response = await agent.RunAsync(anotherPrompt, session);
 
-Console.ForegroundColor = ConsoleColor.Yellow;
-Console.WriteLine("Resuming session with previously saved memory...");
-Console.WriteLine();
-
 Console.ForegroundColor = ConsoleColor.Green;
 Console.WriteLine(anotherPrompt);
 Console.WriteLine();
