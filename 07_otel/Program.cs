@@ -22,13 +22,15 @@ var embeddingDeployment = configuration["Azure:OpenAI:EmbeddingDeployment"];
 var apiKey = configuration["Context7:ApiKey"];
 var searchEndpoint = configuration["Azure:Search:Endpoint"];
 var searchIndex = configuration["Azure:Search:Index"];
+var otelConnectionString = configuration["Azure:Monitor:ConnectionString"];
 
 if (deployment is not { Length: > 0 } ||
     endpoint is not { Length: > 0 } ||
     embeddingDeployment is not { Length: > 0 } ||
     apiKey is not { Length: > 0 } ||
     searchEndpoint is not { Length: > 0 } ||
-    searchIndex is not { Length: > 0 })
+    searchIndex is not { Length: > 0 } ||
+    otelConnectionString is not { Length: > 0 })
 {
     Console.WriteLine("Please set the following environment variables:");
     Console.WriteLine("Azure:OpenAI:Deployment");
@@ -37,6 +39,7 @@ if (deployment is not { Length: > 0 } ||
     Console.WriteLine("Context7:ApiKey");
     Console.WriteLine("Azure:Search:Endpoint");
     Console.WriteLine("Azure:Search:Index");
+    Console.WriteLine("Azure:Monitor:ConnectionString");
     Environment.Exit(1);
 }
 
@@ -46,7 +49,7 @@ const string sourceName = "gopilot";
 using var tracerProvider = Sdk.CreateTracerProviderBuilder()
     .AddAzureMonitorTraceExporter(options =>
     {
-        options.ConnectionString = configuration["Azure:Monitor:ConnectionString"];
+        options.ConnectionString = otelConnectionString;
     })
     .AddSource(sourceName)
     .AddSource("*Microsoft.Extensions.AI") // Listen to the Experimental.Microsoft.Extensions.AI source for chat client telemetry.
