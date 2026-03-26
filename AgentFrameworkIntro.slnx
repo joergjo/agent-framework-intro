@@ -20,4 +20,7 @@
   <Folder Name="/06_skills/">
     <Project Path="06_skills/AgentSkills.csproj" />
   </Folder>
+  <Folder Name="/07_otel/">
+    <Project Path="07_otel/AgentOtel.csproj" />
+  </Folder>
 </Solution>
