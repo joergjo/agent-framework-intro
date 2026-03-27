@@ -20,8 +20,8 @@ The progression starts with `00_meai`, which is intentionally **not** an Agent F
 ## Shared prerequisites
 
 - `.NET 10 SDK`
-- An Azure OpenAI resource with:
-  - a chat/completions deployment
+- An Azure OpenAI or Microsoft Foundry resource with:
+  - an OpenAI model deployment (e.g., gpt-5.2)
   - an embeddings deployment for the RAG, memory, skills, and OTel demos
 - Local Azure authentication that works with `DefaultAzureCredential`
   - most commonly: `az login`
@@ -41,6 +41,7 @@ The progression starts with `00_meai`, which is intentionally **not** an Agent F
     if you are not familiar with Azure AI Search
 - For `07_otel`:
   - an Azure Monitor / Application Insights connection string
+
 
 ## Important note about environment variable names
 
@@ -80,12 +81,17 @@ These variables are used throughout the repo.
 | Purpose | Environment variable |
 | --- | --- |
 | Azure OpenAI endpoint | `Azure__OpenAI__Endpoint` |
-| Chat deployment name | `Azure__OpenAI__Deployment` |
+| Model deployment name | `Azure__OpenAI__Deployment` |
 | Embeddings deployment name | `Azure__OpenAI__EmbeddingDeployment` |
 | Context7 API key | `Context7__ApiKey` |
 | Azure AI Search endpoint | `Azure__Search__Endpoint` |
 | Azure AI Search index name | `Azure__Search__Index` |
 | Azure Monitor connection string | `Azure__Monitor__ConnectionString` |
+
+> Note: When using the Azure OpenAI endpoint of a Microsoft Foundry project, make sure *not* to include
+> any path like `openai/v1`. Just use the base URL, ie.e, `https://<your-resource>.openai.azure.com/`.
+
+
 
 ### bash
 
@@ -158,9 +164,8 @@ dotnet run --project 00_meai/ChatSample.csproj
 
 Notes:
 
-- This demo uses the low-level OpenAI SDK client directly (not `AzureOpenAIClient`). It authenticates with `DefaultAzureCredential` scoped to `https://ai.azure.com/.default` and appends `/openai/v1/` to the configured endpoint. This is the **Azure AI Foundry** unified inference API pattern.
-- `Azure__OpenAI__Endpoint` should therefore be an Azure AI Foundry project endpoint, e.g. `https://<project>.openai.azure.com/`.
-- Demos `01_agent` through `07_otel` use `AzureOpenAIClient` from the `Azure.AI.OpenAI` package and work with both classic Azure OpenAI and Azure AI Foundry endpoints.
+- This demo uses the low-level OpenAI SDK client directly (not `AzureOpenAIClient`). The other demos
+  use `AzureOpenAIClient` for conciseness.
 
 ### `01_agent` - first Agent Framework sample
 
