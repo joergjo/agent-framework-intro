@@ -7,7 +7,7 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
-#pragma warning disable MEAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
 var configuration = new ConfigurationBuilder()
     .AddEnvironmentVariables()
@@ -43,6 +43,7 @@ var context7 = new HostedMcpServerTool(
     ApprovalMode = HostedMcpServerToolApprovalMode.NeverRequire
 };
 // Context7 requires the API key to be passed in a custom HTTP header.
+context7.Headers ??= new Dictionary<string, string>();
 context7.Headers.Add("CONTEXT7_API_KEY", apiKey);
 
 const string instructions =
@@ -95,8 +96,8 @@ var textSearchProvider = new TextSearchProvider(
 // NEW: We need to switch to the verbose overload of AsAIAgent that takes ChatClientAgentOptions in order to specify 
 // the AIContextProviders and ChatOptions with instructions and tools.
 var agent = openAIClient
-    .GetChatClient(deployment)
-    .AsIChatClient()
+    .GetResponsesClient()
+    .AsIChatClient(defaultModelId: deployment)
     .AsAIAgent(
         new ChatClientAgentOptions
         {
@@ -142,4 +143,4 @@ Console.WriteLine(response.Text);
 
 Console.ResetColor();
 
-#pragma warning restore MEAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning restore OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.

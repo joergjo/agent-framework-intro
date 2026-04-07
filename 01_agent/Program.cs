@@ -3,6 +3,8 @@ using Azure.Identity;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 
+#pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
 var configuration = new ConfigurationBuilder()
     .AddEnvironmentVariables()
     .Build();
@@ -25,11 +27,14 @@ const string instructions =
 
 // NEW: Create an Agent Framework agent from the IChatClient with instructions, name and description
 var agent = new AzureOpenAIClient(new Uri(endpoint), new DefaultAzureCredential())
-    .GetChatClient(deployment)
-    .AsIChatClient()
+    .GetResponsesClient()
+    .AsIChatClient(defaultModelId: deployment)
     .AsAIAgent(instructions: instructions, name: "Gopilot", description: "An AI agent that helps users write Go code.");
 
-const string prompt = """Please create a simple "Hello World" web server.""";
+const string prompt = 
+    """
+    Please create a simple "Hello World" web server.
+    """;
 
 // NEW: Create a session instead of manually maintaining a list of messages
 var session = await agent.CreateSessionAsync();
@@ -61,3 +66,5 @@ await foreach(var update in agent.RunStreamingAsync(anotherPrompt, session))
 }
 
 Console.ResetColor();
+
+#pragma warning restore OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.

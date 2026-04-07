@@ -8,9 +8,11 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.Connectors.AzureAISearch;
 using OpenTelemetry;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 
-#pragma warning disable MEAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 #pragma warning disable MAAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
 var configuration = new ConfigurationBuilder()
@@ -43,18 +45,22 @@ if (deployment is not { Length: > 0 } ||
     Environment.Exit(1);
 }
 
-// NEW: Set up OpenTelemetry for distributed tracing of the agent's operations. This is optional but can be very helpful for debugging and monitoring.
+// NEW: Set up OpenTelemetry traces and metrics of the agent's operations. This is optional but can be very helpful for debugging and monitoring.
 const string sourceName = "gopilot";
+const string serviceName = "gopilot-agent";
 
-using var tracerProvider = Sdk.CreateTracerProviderBuilder()
-    .AddAzureMonitorTraceExporter(options =>
-    {
-        options.ConnectionString = otelConnectionString;
-    })
-    .AddSource(sourceName)
-    .AddSource("*Microsoft.Extensions.AI") // Listen to the Experimental.Microsoft.Extensions.AI source for chat client telemetry.
-    .AddSource("*Microsoft.Extensions.Agents*") // Listen to the Experimental.Microsoft.Extensions.Agents source for agent telemetry.
-    .Build();
+using var sdk = OpenTelemetrySdk.Create(builder => builder
+    .ConfigureResource(resource => resource.AddService(serviceName, serviceVersion: "1.0.0"))
+    .WithMetrics(metrics => 
+        metrics
+            .AddHttpClientInstrumentation()
+            .AddRuntimeInstrumentation()
+            .AddAzureMonitorMetricExporter(options => options.ConnectionString = otelConnectionString))
+    .WithTracing(tracing => 
+        tracing
+            .AddHttpClientInstrumentation()
+            .AddSource(sourceName)
+            .AddAzureMonitorTraceExporter(options => options.ConnectionString = otelConnectionString)));
 
 var context7 = new HostedMcpServerTool(
     serverName: "Context7",
@@ -63,6 +69,7 @@ var context7 = new HostedMcpServerTool(
     ApprovalMode = HostedMcpServerToolApprovalMode.NeverRequire
 };
 // Context7 requires the API key to be passed in a custom HTTP header.
+context7.Headers ??= new Dictionary<string, string>();
 context7.Headers.Add("CONTEXT7_API_KEY", apiKey);
 
 const string instructions =
@@ -106,15 +113,14 @@ var textSearchProvider = new TextSearchProvider(
     });
 
 // NEW: Enable OpenTelemetry on the client
-var chatClient = openAIClient.GetChatClient(deployment)
-    .AsIChatClient()
+var chatClient = openAIClient.GetResponsesClient()
+    .AsIChatClient(defaultModelId: deployment)
     .AsBuilder()
-    .UseOpenTelemetry(sourceName: sourceName)
+    .UseOpenTelemetry(sourceName: sourceName)   // Note that this match the source name used when configuring the OpenTelemetry SDK above. 
     .Build();
 
 var userInfoMemory = new UserInfoMemory(chatClient);
-
-var skillsProvider = new FileAgentSkillsProvider("./.agents/skills");
+var skillsProvider = new AgentSkillsProvider("./.agents/skills");
 
 // NEW: Enable OpenTelemetry on the agent
 var agent = chatClient.AsAIAgent(
@@ -166,4 +172,4 @@ Console.WriteLine(response.Text);
 Console.ResetColor();
 
 #pragma warning restore MAAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-#pragma warning restore MEAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning restore OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.

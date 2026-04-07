@@ -3,7 +3,7 @@ using Azure.Identity;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 
-#pragma warning disable MEAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
 var configuration = new ConfigurationBuilder()
     .AddEnvironmentVariables()
@@ -28,6 +28,7 @@ var context7 = new HostedMcpServerTool(
     ApprovalMode = HostedMcpServerToolApprovalMode.NeverRequire
 };
 // Context7 requires the API key to be passed in a custom HTTP header.
+context7.Headers ??= new Dictionary<string, string>();
 context7.Headers.Add("CONTEXT7_API_KEY", apiKey);
 
 const string instructions =
@@ -46,11 +47,11 @@ const string instructions =
     """;
 
 // NEW: Besides Contex7, add a Web Search tool. This allows the agent to search the web for more recent information, 
-//which is especially useful for programming tasks.
+// which is especially useful for programming tasks.
 var agent = new AzureOpenAIClient(new Uri(endpoint), new DefaultAzureCredential())
-    .GetChatClient(deployment)
-    .AsIChatClient()
-    .AsAIAgent(instructions: instructions, name: "Gopilot", description: "An AI agent that helps users write Go code.", 
+    .GetResponsesClient()
+    .AsIChatClient(defaultModelId: deployment)
+    .AsAIAgent(instructions: instructions, name: "Gopilot", description: "An AI agent that helps users write Go code.",
         tools: [context7, new HostedWebSearchTool()]);
 
 const string prompt =
@@ -86,4 +87,4 @@ Console.WriteLine(response.Text);
 
 Console.ResetColor();
 
-#pragma warning restore MEAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+#pragma warning restore OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.

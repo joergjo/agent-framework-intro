@@ -1,6 +1,4 @@
-﻿
-
-using System.ClientModel.Primitives;
+﻿using System.ClientModel.Primitives;
 using Azure.Identity;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
@@ -29,18 +27,19 @@ var openAIClient = new OpenAIClient(
     new BearerTokenPolicy(new DefaultAzureCredential(), "https://ai.azure.com/.default"),
     new OpenAIClientOptions { Endpoint = new Uri(baseUri, "/openai/v1/") });
 
-// Create a client for the chat completions API. The client is specific to the deployment (model name) specified.
-var openAIChatClient = openAIClient.GetChatClient(deployment);
+// Create a client for the Responses API. 
+var openAIChatClient = openAIClient.GetResponsesClient();
 
-// Create the Microsoft.Extensions.AI abstraction IChatClient abstraction from the concrete OpenAI ChatClient. 
-var chatClient = openAIChatClient.AsIChatClient();
+// Create the Microsoft.Extensions.AI abstraction IChatClient abstraction from the concrete OpenAI ResponsesClient,
+// using the specified deployment as the default model for all calls. 
+var chatClient = openAIChatClient.AsIChatClient(defaultModelId: deployment);
 
 // Typically, you rather want to chain these calls for conciseness:
 // var chatClient = new OpenAIClient(
 //     new BearerTokenPolicy(new DefaultAzureCredential(), "https://ai.azure.com/.default"),
 //     new OpenAIClientOptions { Endpoint = new Uri(endpoint) })
-//     .GetChatClient(deployment)
-//     .AsIChatClient();
+//     .GetResponsesClient()
+//     .AsIChatClient(defaultModelId: deployment);
 
 const string instructions = 
     """
@@ -48,7 +47,10 @@ const string instructions =
     Create idiomatic and easy to understand Go code, but do use newer language features like generics where it makes sense. 
     """;
 
-const string prompt = """Please create a simple "Hello World" web server.""";
+const string prompt = 
+    """
+    Please create a simple "Hello World" web server.
+    """;
 
 List<ChatMessage> messages = 
 [
