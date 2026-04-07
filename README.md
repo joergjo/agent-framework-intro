@@ -15,7 +15,7 @@ The progression starts with `00_meai`, which is intentionally **not** an Agent F
 | `04_rag` | `AgentRAG.csproj` | Retrieval-augmented generation with Azure AI Search | Azure OpenAI, Context7 API key, Azure AI Search |
 | `05_memory` | `AgentMemory.csproj` | Session memory via a custom `AIContextProvider` | Same as `04_rag` |
 | `06_skills` | `AgentSkills.csproj` | Loading reusable skills from `.agents/skills` | Same as `05_memory` |
-| `07_otel` | `AgentOtel.csproj` | OpenTelemetry tracing exported to Azure Monitor | Same as `06_skills`, plus Azure Monitor |
+| `07_otel` | `AgentOtel.csproj` | OpenTelemetry traces and metrics exported to Azure Monitor | Same as `06_skills`, plus Azure Monitor |
 
 ## Shared prerequisites
 
@@ -307,13 +307,13 @@ Notes:
 - The repository includes a `use-modern-go` skill under `06_skills/.agents/skills`.
 - Skill versions are pinned in `skills-lock.json`.
 
-### `07_otel` - tracing and observability
+### `07_otel` - observability
 
 Purpose:
 
 - Builds on the skills sample
 - Enables OpenTelemetry on both the chat client and the agent
-- Exports traces to Azure Monitor using the Azure Monitor OpenTelemetry exporter
+- Exports traces and metrcis to Azure Monitor using the Azure Monitor OpenTelemetry exporter
 
 Required configuration:
 
