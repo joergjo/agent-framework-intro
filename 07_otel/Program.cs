@@ -1,4 +1,4 @@
-﻿using AgentSkills;
+﻿using AgentOtel;
 using Azure.AI.OpenAI;
 using Azure.Identity;
 using Azure.Monitor.OpenTelemetry.Exporter;

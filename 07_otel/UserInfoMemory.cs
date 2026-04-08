@@ -1,7 +1,7 @@
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 
-namespace AgentSkills;
+namespace AgentOtel;
 
 public class UserInfo
 {

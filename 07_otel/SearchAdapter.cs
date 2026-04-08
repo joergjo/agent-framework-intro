@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.VectorData;
 
-namespace AgentSkills;
+namespace AgentOtel;
 
 public class SearchAdapter(VectorStoreCollection<string, DocumentRecord> collection, int top = 5) 
 {
