@@ -23,4 +23,7 @@
   <Folder Name="/07_otel/">
     <Project Path="07_otel/AgentOtel.csproj" />
   </Folder>
+  <Folder Name="/08_host/">
+    <Project Path="08_host/AgentHost.csproj" />
+  </Folder>
 </Solution>

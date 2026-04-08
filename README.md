@@ -8,14 +8,15 @@ The progression starts with `00_meai`, which is intentionally **not** an Agent F
 
 | Folder | Project | What it demonstrates | External requirements |
 | --- | --- | --- | --- |
-| `00_meai` | `ChatSample.csproj` | Bare-bones chat client built directly on `Microsoft.Extensions.AI` | Azure OpenAI |
-| `01_agent` | `BasicAgent.csproj` | Turning a chat client into an agent with instructions and sessions | Azure OpenAI |
-| `02_mcp` | `AgentWithMCPTool.csproj` | Adding a hosted MCP tool (`Context7`) for documentation lookup | Azure OpenAI, Context7 API key |
-| `03_websearch` | `AgentWithWebSearch.csproj` | Combining MCP with hosted web search | Azure OpenAI, Context7 API key |
-| `04_rag` | `AgentRAG.csproj` | Retrieval-augmented generation with Azure AI Search | Azure OpenAI, Context7 API key, Azure AI Search |
-| `05_memory` | `AgentMemory.csproj` | Session memory via a custom `AIContextProvider` | Same as `04_rag` |
-| `06_skills` | `AgentSkills.csproj` | Loading reusable skills from `.agents/skills` | Same as `05_memory` |
-| `07_otel` | `AgentOtel.csproj` | OpenTelemetry traces and metrics exported to Azure Monitor | Same as `06_skills`, plus Azure Monitor |
+| [`00_meai`](./00_meai) | `ChatSample.csproj` | Bare-bones chat client built directly on `Microsoft.Extensions.AI` | Azure OpenAI |
+| [`01_agent`](./01_agent) | `BasicAgent.csproj` | Turning a chat client into an agent with instructions and sessions | Azure OpenAI |
+| [`02_mcp`](./02_mcp) | `AgentWithMCPTool.csproj` | Adding a hosted MCP tool (`Context7`) for documentation lookup | Azure OpenAI, Context7 API key |
+| [`03_websearch`](./03_websearch) | `AgentWithWebSearch.csproj` | Combining MCP with hosted web search | Azure OpenAI, Context7 API key |
+| [`04_rag`](./04_rag) | `AgentRAG.csproj` | Retrieval-augmented generation with Azure AI Search | Azure OpenAI, Context7 API key, Azure AI Search |
+| [`05_memory`](./05_memory) | `AgentMemory.csproj` | Session memory via a custom `AIContextProvider` | Same as `04_rag` |
+| [`06_skills`](./06_skills) | `AgentSkills.csproj` | Loading reusable skills from `.agents/skills` | Same as `05_memory` |
+| [`07_otel`](./07_otel) | `AgentOtel.csproj` | OpenTelemetry traces and metrics exported to Azure Monitor | Same as `06_skills`, plus Azure Monitor |
+| [`08_host`](./08_host) | `AgentHost.csproj` | Hosting the agent as an ASP.NET Core web app with OpenAI-compatible endpoints and DevUI | Same as `07_otel` |
 
 ## Shared prerequisites
 
@@ -331,6 +332,38 @@ Run:
 dotnet run --project 07_otel/AgentOtel.csproj
 ```
 
+### `08_host` - hosted web application
+
+Purpose:
+
+- Builds on the OTel sample
+- Replaces the console host with an ASP.NET Core `WebApplication`
+- Registers the agent and its dependencies in the DI container using `AddAIAgent`
+- Exposes OpenAI-compatible Chat Completion and Responses endpoints via `MapOpenAIResponses` and `MapOpenAIConversations`
+- Includes the Agent Framework DevUI for browser-based interaction
+- Uses the Azure Monitor OpenTelemetry Distro (`UseAzureMonitor`) for simplified observability setup
+
+Required configuration:
+
+- `Azure__OpenAI__Endpoint`
+- `Azure__OpenAI__Deployment`
+- `Azure__OpenAI__EmbeddingDeployment`
+- `Context7__ApiKey`
+- `Azure__Search__Endpoint`
+- `Azure__Search__Index`
+- `Azure__Monitor__ConnectionString`
+
+Run:
+
+```bash
+dotnet run --project 08_host/AgentHost.csproj
+```
+
+Notes:
+
+- The app listens on `http://localhost:9900` by default.
+- Open `http://localhost:9900/devui` in a browser to interact with the agent through the DevUI.
+
 ## Suggested learning path
 
 If you are new to the stack, a good order is:
@@ -343,5 +376,6 @@ If you are new to the stack, a good order is:
 6. `05_memory`
 7. `06_skills`
 8. `07_otel`
+9. `08_host`
 
 That path mirrors how the samples add capabilities on top of one another.
