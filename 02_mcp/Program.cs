@@ -85,13 +85,6 @@ Console.WriteLine();
 Console.ForegroundColor = ConsoleColor.Blue;
 Console.WriteLine(response.Text);
 
-// await foreach (var update in agent.RunStreamingAsync(anotherPrompt, session))
-// {
-//     Console.Write(update.Text);
-//     // Dramatic pause to simulate streaming effect
-//     await Task.Delay(50);
-// }
-
 Console.ResetColor();
 
 #pragma warning restore OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
