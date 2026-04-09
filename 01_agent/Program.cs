@@ -50,7 +50,10 @@ Console.WriteLine(response.Text);
 Console.WriteLine();
 Console.ReadKey(intercept: true);
 
-const string anotherPrompt = """Update the code so that it only accepts GET and HEAD requests on "/".""";
+const string anotherPrompt = 
+    """
+    Update the code so that it only accepts GET and HEAD requests on "/".
+    """;
 
 Console.ForegroundColor = ConsoleColor.Green;
 Console.WriteLine(anotherPrompt);
