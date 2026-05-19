@@ -2,21 +2,23 @@
 
 This repository contains a set of small `.NET 10` console apps that progressively demonstrate how to build AI experiences with `Microsoft.Extensions.AI` and the Microsoft Agent Framework.
 
-The progression starts with `00_meai`, which is intentionally **not** an Agent Framework sample. It shows the lower-level `Microsoft.Extensions.AI` building block directly. The remaining demos layer in Agent Framework concepts such as sessions, tools, retrieval, memory, skills, and observability.
+The progression starts with `00_sdk`and `01_meai`, which are intentionally **not** Agent Framework samples. They show the lower-level programming models of the OpenAI SDK and  `Microsoft.Extensions.AI`. 
+The remaining demos layer in Agent Framework concepts such as sessions, tools, retrieval, memory, skills, and observability.
 
 ## Demo overview
 
 | Folder | Project | What it demonstrates | External requirements |
 | --- | --- | --- | --- |
-| [`00_meai`](./00_meai) | `ChatSample.csproj` | Bare-bones chat client built directly on `Microsoft.Extensions.AI` | Azure OpenAI |
-| [`01_agent`](./01_agent) | `BasicAgent.csproj` | Turning a chat client into an agent with instructions and sessions | Azure OpenAI |
-| [`02_mcp`](./02_mcp) | `AgentWithMCPTool.csproj` | Adding a hosted MCP tool (`Context7`) for documentation lookup | Azure OpenAI, Context7 API key |
-| [`03_websearch`](./03_websearch) | `AgentWithWebSearch.csproj` | Combining MCP with hosted web search | Azure OpenAI, Context7 API key |
-| [`04_rag`](./04_rag) | `AgentRAG.csproj` | Retrieval-augmented generation with Azure AI Search | Azure OpenAI, Context7 API key, Azure AI Search |
-| [`05_memory`](./05_memory) | `AgentMemory.csproj` | Session memory via a custom `AIContextProvider` | Same as `04_rag` |
-| [`06_skills`](./06_skills) | `AgentSkills.csproj` | Loading reusable skills from `.agents/skills` | Same as `05_memory` |
-| [`07_otel`](./07_otel) | `AgentOtel.csproj` | OpenTelemetry traces and metrics exported to Azure Monitor | Same as `06_skills`, plus Azure Monitor |
-| [`08_host`](./08_host) | `AgentHost.csproj` | Hosting the agent as an ASP.NET Core web app with OpenAI-compatible endpoints and DevUI | Same as `07_otel` |
+| [`00_sdk`](./00_sdk) | `ResponsesSample.csproj` | Bare-bones OpenAI Responses client built with the OpenAI SDK | Azure OpenAI |
+| [`01_meai`](./01_meai) | `ChatSample.csproj` | Bare-bones `IChatClient` built with `Microsoft.Extensions.AI` | Azure OpenAI |
+| [`02_agent`](./02_agent) | `BasicAgent.csproj` | Turning a chat client into an agent with instructions and sessions | Azure OpenAI |
+| [`03_mcp`](./03_mcp) | `AgentWithMCPTool.csproj` | Adding a hosted MCP tool (`Context7`) for documentation lookup | Azure OpenAI, Context7 API key |
+| [`04_websearch`](./04_websearch) | `AgentWithWebSearch.csproj` | Combining MCP with hosted web search | Azure OpenAI, Context7 API key |
+| [`05_rag`](./05_rag) | `AgentRAG.csproj` | Retrieval-augmented generation with Azure AI Search | Azure OpenAI, Context7 API key, Azure AI Search |
+| [`06_memory`](./06_memory) | `AgentMemory.csproj` | Session memory via a custom `AIContextProvider` | Same as `05_rag` |
+| [`07_skills`](./07_skills) | `AgentSkills.csproj` | Loading reusable skills from `.agents/skills` | Same as `06_memory` |
+| [`08_otel`](./08_otel) | `AgentOtel.csproj` | OpenTelemetry traces and metrics exported to Azure Monitor | Same as `07_skills`, plus Azure Monitor |
+| [`09_host`](./09_host) | `AgentHost.csproj` | Hosting the agent as an ASP.NET Core web app with OpenAI-compatible endpoints and DevUI | Same as `08_otel` |
 
 ## Shared prerequisites
 
@@ -27,7 +29,7 @@ The progression starts with `00_meai`, which is intentionally **not** an Agent F
 - Local Azure authentication that works with `DefaultAzureCredential`
   - most commonly: `az login`
 - A Context7 API key for the demos that use the hosted MCP tool
-- For `04_rag` and later:
+- For `05_rag` and later samples:
   - an Azure AI Search service
   - a suitable Go book in PDF form that you ingest and index into that search service
   - chunked content and embeddings generated from that book so the retrieval step has relevant material to return
@@ -40,7 +42,7 @@ The progression starts with `00_meai`, which is intentionally **not** an Agent F
   - note that there are free Go ebooks available online, but the exact prompts in `04_rag` may need to be adapted to fit the book you indexed
   - see this [quickstart](https://learn.microsoft.com/en-us/azure/search/search-get-started-portal-import-vectors?tabs=storage-access%2Cblob-storage%2Caoai%2Cvectorize-images)
     if you are not familiar with Azure AI Search
-- For `07_otel`:
+- For `08_otel` and later samples:
   - an Azure Monitor / Application Insights connection string
 
 
@@ -144,7 +146,32 @@ dotnet build AgentFrameworkIntro.slnx
 
 Each sample is a console app. Run them from the repo root with `dotnet run --project ...`.
 
-### `00_meai` - `Microsoft.Extensions.AI` building block
+### `00_sdk` - OpenAI SDK with Responses API
+
+Purpose:
+
+- Shows the bare-bones OpenAI SDK without any abstraction layers
+- Uses the OpenAI Responses API directly via `OpenResponsesClient`
+- Demonstrates both full-response and streaming-response calls
+- Maintains conversation context using `PreviousResponseId`
+
+Required configuration:
+
+- `Azure__OpenAI__Endpoint`
+- `Azure__OpenAI__Deployment`
+
+Run:
+
+```bash
+dotnet run --project 00_sdk/ResponsesSample.csproj
+```
+
+Notes:
+
+- This demo uses `BearerTokenPolicy` with `DefaultAzureCredential` for authentication against Azure OpenAI.
+- The endpoint must include the base URL only (no path like `/openai/v1` — the SDK appends it automatically).
+
+### `01_meai` - `Microsoft.Extensions.AI` building block
 
 Purpose:
 
@@ -160,7 +187,7 @@ Required configuration:
 Run:
 
 ```bash
-dotnet run --project 00_meai/ChatSample.csproj
+dotnet run --project 01_meai/ChatSample.csproj
 ```
 
 Notes:
@@ -168,7 +195,7 @@ Notes:
 - This demo uses the low-level OpenAI SDK client directly (not `AzureOpenAIClient`). The other demos
   use `AzureOpenAIClient` for conciseness.
 
-### `01_agent` - first Agent Framework sample
+### `02_agent` - first Agent Framework sample
 
 Purpose:
 
@@ -184,10 +211,10 @@ Required configuration:
 Run:
 
 ```bash
-dotnet run --project 01_agent/BasicAgent.csproj
+dotnet run --project 02_agent/BasicAgent.csproj
 ```
 
-### `02_mcp` - hosted MCP tool integration
+### `03_mcp` - hosted MCP tool integration
 
 Purpose:
 
@@ -204,10 +231,10 @@ Required configuration:
 Run:
 
 ```bash
-dotnet run --project 02_mcp/AgentWithMCPTool.csproj
+dotnet run --project 03_mcp/AgentWithMCPTool.csproj
 ```
 
-### `03_websearch` - hosted web search plus MCP
+### `04_websearch` - hosted web search plus MCP
 
 Purpose:
 
@@ -224,10 +251,10 @@ Required configuration:
 Run:
 
 ```bash
-dotnet run --project 03_websearch/AgentWithWebSearch.csproj
+dotnet run --project 04_websearch/AgentWithWebSearch.csproj
 ```
 
-### `04_rag` - retrieval-augmented generation
+### `05_rag` - retrieval-augmented generation
 
 Purpose:
 
@@ -247,7 +274,7 @@ Required configuration:
 Run:
 
 ```bash
-dotnet run --project 04_rag/AgentRAG.csproj
+dotnet run --project 05_rag/AgentRAG.csproj
 ```
 
 Notes:
@@ -256,7 +283,7 @@ Notes:
 - The model class maps the index fields as `chunk_id`, `chunk`, `title`, and `text_vector`.
 - If you index a different book, the bundled prompts may no longer be a natural fit. Adjust them so they ask about topics that are actually covered by your indexed content.
 
-### `05_memory` - custom session memory
+### `06_memory` - custom session memory
 
 Purpose:
 
@@ -277,10 +304,10 @@ Required configuration:
 Run:
 
 ```bash
-dotnet run --project 05_memory/AgentMemory.csproj
+dotnet run --project 06_memory/AgentMemory.csproj
 ```
 
-### `06_skills` - reusable skills from files
+### `07_skills` - reusable skills from files
 
 Purpose:
 
@@ -300,7 +327,7 @@ Required configuration:
 Run:
 
 ```bash
-dotnet run --project 06_skills/AgentSkills.csproj
+dotnet run --project 07_skills/AgentSkills.csproj
 ```
 
 Notes:
@@ -308,7 +335,7 @@ Notes:
 - The repository includes a `use-modern-go` skill under `06_skills/.agents/skills`.
 - Skill versions are pinned in `skills-lock.json`.
 
-### `07_otel` - observability
+### `08_otel` - observability
 
 Purpose:
 
@@ -329,10 +356,10 @@ Required configuration:
 Run:
 
 ```bash
-dotnet run --project 07_otel/AgentOtel.csproj
+dotnet run --project 08_otel/AgentOtel.csproj
 ```
 
-### `08_host` - hosted web application
+### `09_host` - hosted web application
 
 Purpose:
 
@@ -356,7 +383,7 @@ Required configuration:
 Run:
 
 ```bash
-dotnet run --project 08_host/AgentHost.csproj
+dotnet run --project 09_host/AgentHost.csproj
 ```
 
 Notes:
@@ -368,14 +395,15 @@ Notes:
 
 If you are new to the stack, a good order is:
 
-1. `00_meai`
-2. `01_agent`
-3. `02_mcp`
-4. `03_websearch`
-5. `04_rag`
-6. `05_memory`
-7. `06_skills`
-8. `07_otel`
-9. `08_host`
+1. `00_sdk`
+2. `01_meai`
+3. `02_agent`
+4. `03_mcp`
+5. `04_websearch`
+6. `05_rag`
+7. `06_memory`
+8. `07_skills`
+9. `08_otel`
+10. `09_host`
 
 That path mirrors how the samples add capabilities on top of one another.
