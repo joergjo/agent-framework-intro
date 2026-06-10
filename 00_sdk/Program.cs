@@ -64,6 +64,9 @@ Console.WriteLine();
 Console.ForegroundColor = ConsoleColor.Blue;
 Console.WriteLine(response.GetOutputText());
 Console.WriteLine();
+Console.ForegroundColor = ConsoleColor.Yellow;
+Console.WriteLine("Press any key");
+Console.ResetColor();
 Console.ReadKey(intercept: true);
 
 const string anotherPrompt =
