@@ -140,7 +140,6 @@ const string anotherPrompt =
 
 // NEW: We deserialize the previous session and continue where we left off. 
 session = await agent.DeserializeSessionAsync(serializedSession);
-response = await agent.RunAsync(anotherPrompt, session);
 
 Console.ForegroundColor = ConsoleColor.Yellow;
 Console.WriteLine("Resuming session with previously saved memory...");
@@ -149,6 +148,9 @@ Console.WriteLine();
 Console.ForegroundColor = ConsoleColor.Green;
 Console.WriteLine(anotherPrompt);
 Console.WriteLine();
+Console.ResetColor();
+
+response = await agent.RunAsync(anotherPrompt, session);
 Console.ForegroundColor = ConsoleColor.Blue;
 Console.WriteLine(response.Text);
 

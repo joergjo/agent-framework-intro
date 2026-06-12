@@ -80,11 +80,12 @@ const string anotherPrompt =
     the most basic features of go-chi.    
     """;
 
-response = await agent.RunAsync(anotherPrompt, session);
-
 Console.ForegroundColor = ConsoleColor.Green;
 Console.WriteLine(anotherPrompt);
 Console.WriteLine();
+Console.ResetColor();
+
+response = await agent.RunAsync(anotherPrompt, session);
 Console.ForegroundColor = ConsoleColor.Blue;
 Console.WriteLine(response.Text);
 

@@ -136,11 +136,12 @@ const string anotherPrompt =
     Cite common pitfalls in Go web server development with regards to inheriting context.    
     """;
 
-response = await agent.RunAsync(anotherPrompt, session);
-
 Console.ForegroundColor = ConsoleColor.Green;
 Console.WriteLine(anotherPrompt);
 Console.WriteLine();
+Console.ResetColor();
+
+response = await agent.RunAsync(anotherPrompt, session);
 Console.ForegroundColor = ConsoleColor.Blue;
 Console.WriteLine(response.Text);
 

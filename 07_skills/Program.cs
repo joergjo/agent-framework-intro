@@ -132,11 +132,12 @@ const string anotherPrompt =
     the handler should respond with "Hello {name}", otherwise it should respond with "Hello World".
     """;
 
-response = await agent.RunAsync(anotherPrompt, session);
-
 Console.ForegroundColor = ConsoleColor.Green;
 Console.WriteLine(anotherPrompt);
 Console.WriteLine();
+Console.ResetColor();
+
+response = await agent.RunAsync(anotherPrompt, session);
 Console.ForegroundColor = ConsoleColor.Blue;
 Console.WriteLine(response.Text);
 
