@@ -8,7 +8,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.SemanticKernel.Connectors.AzureAISearch;
 
 #pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-#pragma warning disable MAAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
 var configuration = new ConfigurationBuilder()
     .AddEnvironmentVariables()
@@ -92,7 +91,8 @@ var userInfoMemory = new UserInfoMemory(chatClient);
 
 // NEW: Add a AIContextProvider for skills. AgentSkillsProvider loads skills from a specified folder 
 // and makes them available in the AI context. This allows the agent to use these skills as tools during execution.
-var skillsProvider = new AgentSkillsProvider("./.agents/skills");
+var skillsProvider = new AgentSkillsProvider(
+    Path.Combine(AppContext.BaseDirectory, "skills"));
 
 var agent = chatClient.AsAIAgent(
     new ChatClientAgentOptions
@@ -143,5 +143,4 @@ Console.WriteLine(response.Text);
 
 Console.ResetColor();
 
-#pragma warning restore MAAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 #pragma warning restore OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.

@@ -13,7 +13,6 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 
 #pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-#pragma warning disable MAAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
 var configuration = new ConfigurationBuilder()
     .AddEnvironmentVariables()
@@ -89,7 +88,9 @@ const string instructions =
     Include the provided context in your answers where it applies and cite the source document when available.
     """;
 
-var openAIClient = new AzureOpenAIClient(new Uri(endpoint), new DefaultAzureCredential());
+// Not using DefaultAzureCredential here as temporary fix for 
+// https://github.com/Azure/azure-sdk-for-net/issues/59961
+var openAIClient = new AzureOpenAIClient(new Uri(endpoint), new AzureCliCredential());
 
 var embeddingGenerator = openAIClient
     .GetEmbeddingClient(embeddingDeployment)
@@ -120,7 +121,8 @@ var chatClient = openAIClient.GetResponsesClient()
     .Build();
 
 var userInfoMemory = new UserInfoMemory(chatClient);
-var skillsProvider = new AgentSkillsProvider("./.agents/skills");
+var skillsProvider = new AgentSkillsProvider(
+    Path.Combine(AppContext.BaseDirectory, "skills"));
 
 // NEW: Enable OpenTelemetry on the agent
 var agent = chatClient.AsAIAgent(
@@ -175,5 +177,4 @@ Console.WriteLine(response.Text);
 
 Console.ResetColor();
 
-#pragma warning restore MAAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 #pragma warning restore OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.

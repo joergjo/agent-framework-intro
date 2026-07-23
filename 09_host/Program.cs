@@ -42,7 +42,9 @@ builder.Services.ConfigureOpenTelemetryMeterProvider(
     (_, configure) => configure.AddRuntimeInstrumentation());
 
 // Create Azure OpenAI client, IChatClient and IEmbeddingGenerator. 
-var openAIClient = new AzureOpenAIClient(new Uri(endpoint), new DefaultAzureCredential());
+// Not using DefaultAzureCredential here as temporary fix for 
+// https://github.com/Azure/azure-sdk-for-net/issues/59961
+var openAIClient = new AzureOpenAIClient(new Uri(endpoint), new AzureCliCredential());
 
 var chatClient = openAIClient.GetResponsesClient()
     .AsIChatClient(defaultModelId: deployment)
