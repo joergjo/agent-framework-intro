@@ -1,11 +1,12 @@
-﻿using AgentMemory;
-using Azure.AI.OpenAI;
+﻿using System.ClientModel.Primitives;
+using AgentMemory;
 using Azure.Identity;
 using Azure.Search.Documents.Indexes;
+using CommunityToolkit.VectorData.AzureAISearch;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
-using Microsoft.SemanticKernel.Connectors.AzureAISearch;
+using OpenAI;
 
 #pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
@@ -36,6 +37,8 @@ if (deployment is not { Length: > 0 } ||
     Environment.Exit(1);
 }
 
+var baseUri = new Uri(endpoint);
+
 var context7 = new HostedMcpServerTool(
     serverName: "Context7",
     serverAddress: "https://mcp.context7.com/mcp")
@@ -63,7 +66,13 @@ const string instructions =
     Include the provided context in your answers where it applies and cite the source document when available.
     """;
 
-var openAIClient = new AzureOpenAIClient(new Uri(endpoint), new DefaultAzureCredential());
+var openAIClient = new OpenAIClient(
+    new BearerTokenPolicy(new DefaultAzureCredential(), "https://ai.azure.com/.default"),
+    new OpenAIClientOptions { Endpoint = new Uri(baseUri, "/openai/v1/") });
+
+// Azure OpenAI alternative - currently won't work because of a breaking change in OpenAI 2.11.
+// See https://github.com/openai/openai-dotnet/blob/main/CHANGELOG.md#2110-2026-06-05
+// var openAIClient = new AzureOpenAIClient(new Uri(endpoint), new DefaultAzureCredential());
 
 var embeddingGenerator = openAIClient
     .GetEmbeddingClient(embeddingDeployment)

@@ -1,7 +1,8 @@
-﻿using AgentHost;
-using Azure.AI.OpenAI;
+﻿using System.ClientModel.Primitives;
+using AgentHost;
 using Azure.Identity;
 using Azure.Monitor.OpenTelemetry.AspNetCore;
+using CommunityToolkit.VectorData.AzureAISearch;
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.DevUI;
 using Microsoft.Agents.AI.Hosting;
@@ -10,13 +11,12 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.SemanticKernel.Connectors.AzureAISearch;
+using OpenAI;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 
 #pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-#pragma warning disable MAAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
 // NEW: Use a WebApplication instead of a Console application. This allows us to take advantage of dependency injection, configuration, and other features of ASP.NET Core. 
 // It also allows us to easily expose a Chat Completion or Responses endpoint (or both) for interacting with the agent. 
@@ -30,6 +30,8 @@ var searchEndpoint = builder.Configuration["Azure:Search:Endpoint"] ?? throw new
 var searchIndex = builder.Configuration["Azure:Search:Index"] ?? throw new InvalidOperationException("Azure:Search:Index configuration is required.");
 var otelConnectionString = builder.Configuration["Azure:Monitor:ConnectionString"] ?? throw new InvalidOperationException("Azure:Monitor:ConnectionString configuration is required.");
 
+var baseUri = new Uri(endpoint);
+
 // Configure OpenTelemetry using the OpenTelemetry Distro for Azure. This simplifies the setup a bit compared to the previous example.
 // For example, HttpClient instrumentation is included by default.
 builder.Services
@@ -41,10 +43,16 @@ builder.Services.ConfigureOpenTelemetryTracerProvider(
 builder.Services.ConfigureOpenTelemetryMeterProvider(
     (_, configure) => configure.AddRuntimeInstrumentation());
 
-// Create Azure OpenAI client, IChatClient and IEmbeddingGenerator. 
+// Create OpenAI client, IChatClient and IEmbeddingGenerator.
 // Not using DefaultAzureCredential here as temporary fix for 
 // https://github.com/Azure/azure-sdk-for-net/issues/59961
-var openAIClient = new AzureOpenAIClient(new Uri(endpoint), new AzureCliCredential());
+var openAIClient = new OpenAIClient(
+    new BearerTokenPolicy(new AzureCliCredential(), "https://ai.azure.com/.default"),
+    new OpenAIClientOptions { Endpoint = new Uri(baseUri, "/openai/v1/") });
+
+// Azure OpenAI alternative - currently won't work because of a breaking change in OpenAI 2.11.
+// See https://github.com/openai/openai-dotnet/blob/main/CHANGELOG.md#2110-2026-06-05
+// var openAIClient = new AzureOpenAIClient(new Uri(endpoint), new AzureCliCredential());
 
 var chatClient = openAIClient.GetResponsesClient()
     .AsIChatClient(defaultModelId: deployment)
@@ -59,7 +67,7 @@ var embeddingGenerator = openAIClient
 // NEW: Register AIAgent and dependencies in DI container. 
 builder.Services.AddAzureAISearchVectorStore(
     new Uri(searchEndpoint),
-    new DefaultAzureCredential(),
+    new AzureCliCredential(),
     new AzureAISearchVectorStoreOptions
     {
         EmbeddingGenerator = embeddingGenerator
@@ -83,7 +91,7 @@ builder.Services.AddAIAgent("Gopilot", (sp, key) =>
             SearchTime = TextSearchProviderOptions.TextSearchBehavior.BeforeAIInvoke
         });
 
-    var context7 = 
+    var context7 =
         new HostedMcpServerTool(
             serverName: "Context7",
             serverAddress: "https://mcp.context7.com/mcp")
@@ -94,7 +102,14 @@ builder.Services.AddAIAgent("Gopilot", (sp, key) =>
     context7.Headers.Add("CONTEXT7_API_KEY", apiKey);
 
     var userInfoMemory = new UserInfoMemory(chatClient);
-    var skillsProvider = new AgentSkillsProvider("./.agents/skills");
+    var skillsProvider = new AgentSkillsProvider(
+        Path.Combine(AppContext.BaseDirectory, "skills"),
+        options: new AgentSkillsProviderOptions
+        {
+            // Only read-only access to the bundled skills is approved automatically.
+            DisableLoadSkillApproval = true,
+            DisableReadSkillResourceApproval = true
+        });
 
     return chatClient.AsAIAgent(
         new ChatClientAgentOptions
@@ -136,5 +151,4 @@ app.MapDevUI();
 
 app.Run();
 
-#pragma warning restore MAAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 #pragma warning restore OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.

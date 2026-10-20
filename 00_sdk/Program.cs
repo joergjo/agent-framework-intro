@@ -47,7 +47,7 @@ var options = new CreateResponseOptions()
     Model = deployment,
     ReasoningOptions = new ResponseReasoningOptions()
     {
-        ReasoningEffortLevel = ResponseReasoningEffortLevel.None,
+        ReasoningEffortLevel = ResponseReasoningEffortLevel.Low,
     }
 };
 
@@ -80,7 +80,7 @@ options = new CreateResponseOptions()
     Model = deployment,
     ReasoningOptions = new ResponseReasoningOptions()
     {
-        ReasoningEffortLevel = ResponseReasoningEffortLevel.None,
+        ReasoningEffortLevel = ResponseReasoningEffortLevel.Low,
     },
     // Set the previous response id to maintain context
     PreviousResponseId = response.Id,

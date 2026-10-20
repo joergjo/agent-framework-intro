@@ -1,7 +1,8 @@
-﻿using Azure.AI.OpenAI;
+﻿using System.ClientModel.Primitives;
 using Azure.Identity;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
+using OpenAI;
 
 #pragma warning disable OPENAI001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
@@ -20,6 +21,8 @@ if (deployment is not { Length: > 0 } || endpoint is not { Length: > 0 } || apiK
     Console.WriteLine("Context7:ApiKey");
     Environment.Exit(1);
 }
+
+var baseUri = new Uri(endpoint);
 
 // NEW: Define tools for our agent to use
 var context7 = new HostedMcpServerTool(
@@ -48,11 +51,21 @@ const string instructions =
     """;
 
 // NEW: Add the tool to the agent's configuration. The agent will be able to call the tool during conversations.
-var agent = new AzureOpenAIClient(new Uri(endpoint), new DefaultAzureCredential())
+var agent = new OpenAIClient(
+    new BearerTokenPolicy(new DefaultAzureCredential(), "https://ai.azure.com/.default"),
+    new OpenAIClientOptions { Endpoint = new Uri(baseUri, "/openai/v1/") })
     .GetResponsesClient()
     .AsIChatClient(defaultModelId: deployment)
     .AsAIAgent(instructions: instructions, name: "Gopilot", description: "An AI agent that helps users write Go code.",
         tools: [context7]);
+
+// Azure OpenAI alternative - currently won't work because of a breaking change in OpenAI 2.11.
+// See https://github.com/openai/openai-dotnet/blob/main/CHANGELOG.md#2110-2026-06-05
+// var agent = new AzureOpenAIClient(new Uri(endpoint), new DefaultAzureCredential())
+//     .GetResponsesClient()
+//     .AsIChatClient(defaultModelId: deployment)
+//     .AsAIAgent(instructions: instructions, name: "Gopilot", description: "An AI agent that helps users write Go code.",
+//         tools: [context7]);
 
 const string prompt =
     """

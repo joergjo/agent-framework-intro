@@ -1,12 +1,13 @@
-﻿using AgentOtel;
-using Azure.AI.OpenAI;
+﻿using System.ClientModel.Primitives;
+using AgentOtel;
 using Azure.Identity;
 using Azure.Monitor.OpenTelemetry.Exporter;
 using Azure.Search.Documents.Indexes;
+using CommunityToolkit.VectorData.AzureAISearch;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
-using Microsoft.SemanticKernel.Connectors.AzureAISearch;
+using OpenAI;
 using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
@@ -44,18 +45,20 @@ if (deployment is not { Length: > 0 } ||
     Environment.Exit(1);
 }
 
+var baseUri = new Uri(endpoint);
+
 // NEW: Set up OpenTelemetry traces and metrics of the agent's operations. This is optional but can be very helpful for debugging and monitoring.
 const string sourceName = "gopilot";
 const string serviceName = "gopilot-agent";
 
 using var sdk = OpenTelemetrySdk.Create(builder => builder
     .ConfigureResource(resource => resource.AddService(serviceName, serviceVersion: "1.0.0"))
-    .WithMetrics(metrics => 
+    .WithMetrics(metrics =>
         metrics
             .AddHttpClientInstrumentation()
             .AddRuntimeInstrumentation()
             .AddAzureMonitorMetricExporter(options => options.ConnectionString = otelConnectionString))
-    .WithTracing(tracing => 
+    .WithTracing(tracing =>
         tracing
             .AddHttpClientInstrumentation()
             .AddSource(sourceName)
@@ -90,7 +93,13 @@ const string instructions =
 
 // Not using DefaultAzureCredential here as temporary fix for 
 // https://github.com/Azure/azure-sdk-for-net/issues/59961
-var openAIClient = new AzureOpenAIClient(new Uri(endpoint), new AzureCliCredential());
+var openAIClient = new OpenAIClient(
+    new BearerTokenPolicy(new DefaultAzureCredential(), "https://ai.azure.com/.default"),
+    new OpenAIClientOptions { Endpoint = new Uri(baseUri, "/openai/v1/") });
+
+// Azure OpenAI alternative - currently won't work because of a breaking change in OpenAI 2.11.
+// See https://github.com/openai/openai-dotnet/blob/main/CHANGELOG.md#2110-2026-06-05
+// var openAIClient = new AzureOpenAIClient(new Uri(endpoint), new AzureCliCredential());
 
 var embeddingGenerator = openAIClient
     .GetEmbeddingClient(embeddingDeployment)
@@ -122,7 +131,13 @@ var chatClient = openAIClient.GetResponsesClient()
 
 var userInfoMemory = new UserInfoMemory(chatClient);
 var skillsProvider = new AgentSkillsProvider(
-    Path.Combine(AppContext.BaseDirectory, "skills"));
+    Path.Combine(AppContext.BaseDirectory, "skills"),
+    options: new AgentSkillsProviderOptions
+    {
+        // Only read-only access to the bundled skills is approved automatically.
+        DisableLoadSkillApproval = true,
+        DisableReadSkillResourceApproval = true
+    });
 
 // NEW: Enable OpenTelemetry on the agent
 var agent = chatClient.AsAIAgent(
