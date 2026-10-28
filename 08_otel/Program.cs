@@ -144,6 +144,7 @@ var agent = chatClient.AsAIAgent(
     new ChatClientAgentOptions
     {
         Name = "Gopilot",
+        Id = $"{sourceName}-v1",
         Description = "An AI agent that helps users write Go code.",
         ChatOptions = new ChatOptions
         {
