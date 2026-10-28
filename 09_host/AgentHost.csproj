@@ -14,16 +14,13 @@
     <PackageReference Include="Microsoft.Agents.AI.DevUI" Version="1.25.0-preview.261014.1" />
     <PackageReference Include="Microsoft.Agents.AI.Hosting" Version="1.25.0-preview.261014.1" />
     <PackageReference Include="Microsoft.Agents.AI.OpenAI" Version="1.25.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.13" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.14" />
     <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.19.0" />
     <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="1.19.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include=".agents/skills/**/*"
-             Link="skills/%(RecursiveDir)%(Filename)%(Extension)"
-             CopyToOutputDirectory="PreserveNewest"
-             CopyToPublishDirectory="PreserveNewest" />
+    <Content Include=".agents/skills/**/*" Link="skills/%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>
