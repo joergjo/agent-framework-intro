@@ -94,7 +94,7 @@ const string instructions =
 // Not using DefaultAzureCredential here as temporary fix for 
 // https://github.com/Azure/azure-sdk-for-net/issues/59961
 var openAIClient = new OpenAIClient(
-    new BearerTokenPolicy(new DefaultAzureCredential(), "https://ai.azure.com/.default"),
+    new BearerTokenPolicy(new AzureCliCredential(), "https://ai.azure.com/.default"),
     new OpenAIClientOptions { Endpoint = new Uri(baseUri, "/openai/v1/") });
 
 // Azure OpenAI alternative - currently won't work because of a breaking change in OpenAI 2.11.
